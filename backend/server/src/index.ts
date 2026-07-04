@@ -1,3 +1,5 @@
+// index.ts only starts the server
+
 import pool from "./config/db.js";
 
 // testing if the database has been connected .
