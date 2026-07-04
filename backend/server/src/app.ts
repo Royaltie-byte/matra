@@ -1,9 +1,14 @@
-// only creates express stack
+// only creates express application stack
 import express from "express";
+// add routing capability
+import routes from "./routes/index.js";
 
 const app = express();
 
-// Built-in middleware
+// built-in middleware
 app.use(express.json());
+// register application routes
+app.use(routes);
+
 
 export default app;
