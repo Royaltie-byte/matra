@@ -1,21 +1,12 @@
 // index.ts only starts the server
 
-import pool from "./config/db.js";
+import dotenv from "dotenv";
+import app from "./app.js";
 
-// testing if the database has been connected .
-//temporary code ...
+dotenv.config();
 
-async function main() {
-    try {
-        const result = await pool.query(
-            "SELECT * FROM organization"
-        );
+const PORT = process.env.PORT || 3000;
 
-        console.log(result.rows);
-
-    } catch (err) {
-        console.error("Database error:", err);
-    }
-}
-
-main();
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
