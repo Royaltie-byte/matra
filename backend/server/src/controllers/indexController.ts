@@ -1,4 +1,4 @@
-// router response logic
+// route layer response logic
 
 import type { Request, Response } from "express";
 

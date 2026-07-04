@@ -1,6 +1,6 @@
 // only creates express application stack
 import express from "express";
-// add routing capabilities
+// add routing capability
 import routes from "./routes/index.js";
 
 const app = express();
