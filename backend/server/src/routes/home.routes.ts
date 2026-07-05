@@ -1,7 +1,7 @@
 // routing layer, with only the request logic
 
 import { Router } from "express";
-import { getHome } from "../controllers/indexController.js";
+import { getHome } from "../controllers/home.controller.js";
 
 const router = Router();
 
