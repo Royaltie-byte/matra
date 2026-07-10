@@ -3,6 +3,7 @@ import express from "express";
 // add routing capability for the different routes ( imports )
 import homeRouter from "./routes/home.routes.js";
 import healthRouter from "./routes/health.routes.js";
+import authRouter from "./routes/auth.routes.js";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use('/',homeRouter);
 app.use('/health',healthRouter)
+app.use('/auth', authRouter);
 
 
 export default app;
