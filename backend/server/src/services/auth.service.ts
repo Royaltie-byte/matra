@@ -19,7 +19,46 @@ interface RegisterUserData {
     role: string;
 }
 
-export const registerUser = async (user: RegisterUserData) => {
+interface OrganizationData{
+    name: string;
+    organization_type: string;
+    phone: string;
+    email: string;
+}
+
+
+
+
+export const createOrganization = async ( organization: OrganizationData ) =>{
+    const result = await pool.query(
+        `INSERT INTO organization(
+            name,
+            organization_type,
+            phone,
+            email
+        )
+        VALUES($1,$2,$3,$4)
+        RETURNING
+            organization_id,
+            name,
+            organization_type,
+            phone,
+            email,
+            is_active,
+            created_at`,
+
+            [
+                organization.name,
+                organization.organization_type,
+                organization.phone,
+                organization.email.toLowerCase().trim()
+            ]
+    )
+
+    return result.rows[0];
+}
+
+export const createUser = async (user: RegisterUserData) => {
 
     //hashing the password using bcrypt.
     const hashedPassword = await bcrypt.hash(user.password,10)
@@ -36,7 +75,7 @@ export const registerUser = async (user: RegisterUserData) => {
             role,
             is_active
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        VALUES ($1, $2, $3, $4, $5, $6, $7 , $8)
         RETURNING
             user_id,
             organization_id,
@@ -56,7 +95,7 @@ export const registerUser = async (user: RegisterUserData) => {
             user.phone,
             hashedPassword, // hashed using bcrypt.
             user.role,
-            false,
+            true
         ]
     );
 
