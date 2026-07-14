@@ -1,33 +1,61 @@
 import type { Request, Response } from "express";
 import pool from "../config/db.js";
-import { registerUser } from "../services/auth.service.js";
-import { comparePassword , findUserByEmail , generateToken } from '../services/auth.service.js';
+import { createUser } from "../services/auth.service.js";
+import { comparePassword , findUserByEmail , generateToken , createOrganization  } from '../services/auth.service.js';
 
 
 
 //============/register controller =========//
 
 export const register = async (req: Request, res: Response) => {
-    const {
-        organization_id,
-        first_name,
-        last_name,
-        email,
-        phone,
-        password,
-        role,
-    } = req.body;
+
+    //instead of capturing all the fields as single entities , we capture 
+    //two objects as shown below
+    //this is what is sent by the frontend
+    /* {
+        organization:{
+            name: organization.name,
+            organization_type: organization.organization_type,
+            phone: organization.phone,
+            email: organization.email
+        }
+        admin:{
+            first_name:,
+            last_name:,
+            email:,
+            phone:,
+            password:
+            
+        }
+    }
+        */
+
+    //req.body recieves two objecs now
+
+    const { organization , admin } = req.body;
+
+    if(!organization || !admin){
+        return res.status(400).json({
+            success: false,
+            message: "Missing required fields"
+        })
+    }
     
     // Basic input validation
+    //we don't collect the role in this part , cause basically it's the
+    //super_admin doing the registration.
     if (
-        !organization_id ||
-        !first_name ||
-        !last_name ||
-        !email ||
-        !phone ||
-        !password ||
-        !role
-    ) {
+        !organization.name ||
+        !organization.organization_type ||
+        !organization.phone ||
+        !organization.email ||
+        !admin.first_name ||
+        !admin.last_name ||
+        !admin.phone ||
+        !admin.email ||
+        !admin.password    
+    ) 
+    {
         return res.status(400).json({
             success: false,
             message: "All fields are required.",
@@ -35,14 +63,29 @@ export const register = async (req: Request, res: Response) => {
     }
 
     try {
-        const user = await registerUser({
-            organization_id,
-            first_name,
-            last_name,
-            email,
-            phone,
-            password,
-            role,
+        //create the organization
+        //NOTE.
+        console.log('BEGIN/COMMIT/ROLLBACK not implemented.');
+        //this is to prevent cases of organization created and super admin fails
+        //after implementing , delete this log.
+        
+        const org = await createOrganization({
+            name: organization.name,
+            organization_type: organization.organization_type,
+            phone: organization.phone,
+            email: organization.email
+        });
+
+        //create the SUPER_ADMIN 
+
+        const user = await createUser({
+            organization_id: org.organization_id,
+            first_name: admin.first_name,
+            last_name: admin.last_name,
+            email: admin.email,
+            phone: admin.phone,
+            password: admin.password,
+            role:'SUPER_ADMIN'
         });
 
         return res.status(201).json({
