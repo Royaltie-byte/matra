@@ -13,21 +13,22 @@ export const register = async (req: Request, res: Response) => {
     //two objects as shown below
     //this is what is sent by the frontend
     /* {
-        organization:{
-            name: organization.name,
-            organization_type: organization.organization_type,
-            phone: organization.phone,
-            email: organization.email
-        }
-        admin:{
-            first_name:,
-            last_name:,
-            email:,
-            phone:,
-            password:
-            
-        }
+    //test data to test login from now on.
+
+    "organization": {
+        "name": "Royaltie Health",
+        "type": "PRIVATE",
+        "phone": "0778000000",
+        "email": "royaltie@gmail.com"
+    },
+    "admin": {
+        "first_name": "Allan",
+        "last_name": "Kihiu",
+        "email": "allan@gmail.com",
+        "phone": "0778547599",
+        "password": "12345"
     }
+}
         */
 
     //req.body recieves two objecs now
@@ -46,7 +47,7 @@ export const register = async (req: Request, res: Response) => {
     //super_admin doing the registration.
     if (
         !organization.name ||
-        !organization.organization_type ||
+        !organization.type ||
         !organization.phone ||
         !organization.email ||
         !admin.first_name ||
@@ -71,7 +72,7 @@ export const register = async (req: Request, res: Response) => {
         
         const org = await createOrganization({
             name: organization.name,
-            organization_type: organization.organization_type,
+            type: organization.type,
             phone: organization.phone,
             email: organization.email
         });
@@ -168,6 +169,16 @@ export const login = async (req: Request , res: Response ) => {
 }
 
 
+//===============/me controller ==============//
+
+export const me = (req:Request , res:Response ) => {
+    res.status(200).json({
+        success: true,
+        message:req.user //sending the logged in user as a response.
+    })
+}
+
+
 
 //==============/logout controller ==============//
 
@@ -177,8 +188,3 @@ export function logout(req: Request, res: Response): void {
     });
 }
 
-export function me(req: Request, res: Response): void {
-    res.status(501).json({
-        message: "Current user endpoint not implemented yet.",
-    });
-}

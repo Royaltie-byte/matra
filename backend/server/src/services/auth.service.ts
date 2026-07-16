@@ -1,6 +1,6 @@
 import pool from "../config/db.js";
 import bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
+import  jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -21,7 +21,7 @@ interface RegisterUserData {
 
 interface OrganizationData{
     name: string;
-    organization_type: string;
+    type: string;
     phone: string;
     email: string;
 }
@@ -33,7 +33,7 @@ export const createOrganization = async ( organization: OrganizationData ) =>{
     const result = await pool.query(
         `INSERT INTO organization(
             name,
-            organization_type,
+            type,
             phone,
             email
         )
@@ -41,7 +41,7 @@ export const createOrganization = async ( organization: OrganizationData ) =>{
         RETURNING
             organization_id,
             name,
-            organization_type,
+            type,
             phone,
             email,
             is_active,
@@ -49,7 +49,7 @@ export const createOrganization = async ( organization: OrganizationData ) =>{
 
             [
                 organization.name,
-                organization.organization_type,
+                organization.type,
                 organization.phone,
                 organization.email.toLowerCase().trim()
             ]
@@ -132,7 +132,7 @@ export const generateToken = (user_id: string , organization_id: string , role: 
     const secret = process.env.JWT_SECRET;
     
     if(!secret){
-        throw new Error("JWT_SECRET is not defined!");
+        throw new Error("JWT secret is not defined!");
     }
     
     return jwt.sign(
