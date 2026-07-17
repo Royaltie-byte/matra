@@ -63,22 +63,26 @@ export const register = async (req: Request, res: Response) => {
         });
     }
 
+    // Check out a single dedicated client from the pool. All queries for
+    // this request must go through THIS client so they share one session/
+    // transaction - if we used pool.query() for one of them, that query
+    // could run on a different physical connection and wouldn't be part
+    // of the same transaction.
+    const client = await pool.connect();
+
     try {
-        //create the organization
-        //NOTE.
-        console.log('BEGIN/COMMIT/ROLLBACK not implemented.');
-        //this is to prevent cases of organization created and super admin fails
-        //after implementing , delete this log.
         
+        await client.query('BEGIN');
+
+        //create the organization
         const org = await createOrganization({
             name: organization.name,
             type: organization.type,
             phone: organization.phone,
             email: organization.email
-        });
+        }, client);
 
         //create the SUPER_ADMIN 
-
         const user = await createUser({
             organization_id: org.organization_id,
             first_name: admin.first_name,
@@ -87,7 +91,9 @@ export const register = async (req: Request, res: Response) => {
             phone: admin.phone,
             password: admin.password,
             role:'SUPER_ADMIN'
-        });
+        }, client);
+
+        await client.query('COMMIT');
 
         return res.status(201).json({
             success: true,
@@ -96,12 +102,23 @@ export const register = async (req: Request, res: Response) => {
         });
 
     } catch (error) {
+
+        // Something failed after the organization (and/or user) was
+        // partially created - undo everything so we never end up with an
+        // orphaned organization with no admin.
+        await client.query('ROLLBACK');
+
         console.error("Registration error:", error);
 
         return res.status(500).json({
             success: false,
             message: "Registration failed.",
         });
+    }
+    finally {
+        // Always return the client to the pool, whether we committed,
+        // rolled back, or something threw before either happened.
+        client.release();
     }
 };
 
