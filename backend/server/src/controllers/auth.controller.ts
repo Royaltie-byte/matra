@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import pool from "../config/db.js";
 import { createUser } from "../services/auth.service.js";
 import { comparePassword , findUserByEmail , generateToken , createOrganization, findOrganizationByEmail, findOrganizationByPhone, findUserByPhone } from '../services/auth.service.js';
+import { isValidEmail, isValidPhone, isStrongPassword } from "../utils/validation.js";
 
 
 
@@ -60,6 +61,45 @@ export const register = async (req: Request, res: Response) => {
         return res.status(400).json({
             success: false,
             message: "All fields are required.",
+        });
+    }
+
+    // validating that the organization email and phone follow the correct standard format
+    if (!isValidEmail(organization.email)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid organization email."
+        });
+    }
+
+    if (!isValidPhone(organization.phone)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid organization phone number."
+        });
+    }
+
+    // validating that the admin email and phone follow the correct standard format
+    if (!isValidEmail(admin.email)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid administrator email."
+        });
+    }
+
+    if (!isValidPhone(admin.phone)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid administrator phone number."
+        });
+    }
+
+    // basic password validation, to be refined once every other validation works 
+    if (!isStrongPassword(admin.password)) {
+        return res.status(400).json({
+            success: false,
+            message:
+                "Password must contain at least 8 characters."
         });
     }
 
