@@ -1,10 +1,15 @@
 import pool from "../config/db.js";
+import type { Pool, PoolClient } from "pg";
 import bcrypt from 'bcrypt';
 import  jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
+
+// Either the plain pool (auto-commit, one-off queries) or a checked-out
+// client that's part of an ongoing BEGIN/COMMIT/ROLLBACK transaction.
+type DBClient = Pool | PoolClient;
 
 
 //========UNDER REGISTRATION===========//
@@ -29,8 +34,8 @@ interface OrganizationData{
 
 
 
-export const createOrganization = async ( organization: OrganizationData ) =>{
-    const result = await pool.query(
+export const createOrganization = async ( organization: OrganizationData, db: DBClient = pool ) =>{
+    const result = await db.query(
         `INSERT INTO organization(
             name,
             type,
@@ -58,12 +63,12 @@ export const createOrganization = async ( organization: OrganizationData ) =>{
     return result.rows[0];
 }
 
-export const createUser = async (user: RegisterUserData) => {
+export const createUser = async (user: RegisterUserData, db: DBClient = pool) => {
 
     //hashing the password using bcrypt.
     const hashedPassword = await bcrypt.hash(user.password,10)
 
-    const result = await pool.query(
+    const result = await db.query(
         `
         INSERT INTO users (
             organization_id,
