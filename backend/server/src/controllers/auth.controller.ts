@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import pool from "../config/db.js";
 import { createUser } from "../services/auth.service.js";
-import { comparePassword , findUserByEmail , generateToken , createOrganization, findOrganizationByEmail, findOrganizationByPhone, findUserByPhone } from '../services/auth.service.js';
+import { comparePassword , findUserByEmail , generateToken , createOrganization, findOrganizationByEmail, findOrganizationByPhone, findUserByPhone , createInvitedUser } from '../services/auth.service.js';
 import { isValidEmail, isValidPhone, isStrongPassword } from "../utils/validation.js";
 
 
@@ -232,6 +232,14 @@ export const login = async (req: Request , res: Response ) => {
             })
         }
 
+        //check if the password_hash in the database is null.
+        if(!user.password_hash){
+            return res.status(400).json({
+                success:false,
+                message: "Invalid email or password!"
+            })
+        }
+
         //compare the password with the one in the database
         const isValid = await comparePassword(password,user.password_hash);
 
@@ -285,5 +293,69 @@ export function logout(req: Request, res: Response): void {
     res.status(501).json({
         message: "Logout endpoint not implemented yet.",
     });
+}
+
+
+//==============/invite controller ===================//
+//to invite someone ,we need , firstname, lastname, email , phone, organization_id,
+//role
+
+
+export const invite = async (req:Request , res: Response ) => {
+    try{
+        //add a defensive check to ensure req.user exists after authenticatToken runs
+
+        if(!req.user){
+            return res.status(401).json({
+                success:false,
+                message: "Not Authenticated!"
+            })
+        }
+
+        //capture data from frontend.
+
+        const { first_name , last_name , email , phone ,role } = req.body;
+
+        if(!first_name || !last_name || !email || !phone || !role ){
+            return res.status(400).json({
+                success:false,
+                message: "All fields are required!"
+            })
+        }
+
+        //check if email exists
+        const user = await findUserByEmail(email);
+        if(user){
+            return res.status(409).json({
+                success:false,
+                message: "A user with this email already exists!"
+            })
+        }
+        
+        //get organization id from req.user from authenticatToken.
+
+        const organization_id = req.user.organization_id;
+
+        //call createInvitedUser to create the user being invited.
+
+        const invitedUser = await createInvitedUser({
+            organization_id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            role
+        });
+
+        //invite token generation goes here.....  to be continued.
+        
+    }catch(error){
+        console.error("Invitation error:",error);
+        return res.status(500).json({
+            success:false,
+            message: " Failed to invite the user! "
+        })
+    }
+
 }
 

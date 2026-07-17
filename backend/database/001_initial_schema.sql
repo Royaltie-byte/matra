@@ -160,7 +160,7 @@ CREATE TABLE users (
   email VARCHAR(255) UNIQUE NOT NULL,
   phone VARCHAR(30) NOT NULL,
 
-  password_hash TEXT NOT NULL,
+  password_hash TEXT , --dropped not null constraint for invite purposes.
   role role_type NOT NULL,
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
