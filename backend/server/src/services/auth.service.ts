@@ -107,6 +107,52 @@ export const createUser = async (user: RegisterUserData, db: DBClient = pool) =>
     return result.rows[0];
 };
 
+// Verify that the registering email doesn't exist (unique)
+export const findOrganizationByEmail = async (email: string) => {
+    const result = await pool.query(
+        `
+        SELECT organization_id
+        FROM organization
+        WHERE email = $1
+        `,
+        [email.toLowerCase().trim()]
+    );
+
+    return result.rows[0];
+};
+
+// Verify that each organization has a unique phone
+export const findOrganizationByPhone = async (phone: string) => {
+    const result = await pool.query(
+        `
+        SELECT organization_id
+        FROM organization
+        WHERE phone = $1
+        `,
+        [phone.trim()]
+    );
+
+    return result.rows[0];
+};
+
+// Ensure that admin phone is unique
+export const findUserByPhone = async (phone: string) => {
+    const result = await pool.query(
+        `
+        SELECT
+            user_id,
+            phone
+        FROM users
+        WHERE phone = $1
+        `,
+        [phone.trim()]
+    );
+
+    return result.rows[0];
+};
+
+
+
 
 //===========UNDER LOGIN ============//
 
@@ -121,7 +167,17 @@ export const comparePassword = async (plainPassword: string , hashedPassword: st
 
 export const findUserByEmail = async (email: string) =>{
     const result = await pool.query(
-        `SELECT * FROM users WHERE email = $1`,
+        `SELECT
+            user_id,
+            organization_id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            password_hash,
+            role,
+            is_active
+         FROM users WHERE email = $1`,
         [email.toLowerCase().trim()]
     )
 
