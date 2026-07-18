@@ -7,7 +7,8 @@ import {
     logout,
     me,
     register,
-    invite
+    invite,
+    acceptInvite
 } from "../controllers/auth.controller.js";
 
 const router = Router();
@@ -23,5 +24,7 @@ router.get("/me",authenticateToken, me);
 //invite functionality 
 //currently set that only the super admin can invite staff( doctor , nurse , chw etc)
 router.post("/invite",authenticateToken,requireRole(['SUPER_ADMIN']),invite);
+
+router.post("/accept-invite",acceptInvite);
 
 export default router;

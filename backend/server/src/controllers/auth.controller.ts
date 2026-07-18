@@ -1,8 +1,13 @@
 import type { Request, Response } from "express";
 import pool from "../config/db.js";
 import { createUser } from "../services/auth.service.js";
-import { comparePassword , findUserByEmail , generateToken , createOrganization, findOrganizationByEmail, findOrganizationByPhone, findUserByPhone , createInvitedUser } from '../services/auth.service.js';
+import { updatePassword , comparePassword , findUserByEmail , generateToken , generateInviteToken , createOrganization, findOrganizationByEmail, findOrganizationByPhone, findUserByPhone , createInvitedUser } from '../services/auth.service.js';
 import { isValidEmail, isValidPhone, isStrongPassword } from "../utils/validation.js";
+import jwt from 'jsonwebtoken';
+import type { JwtPayload } from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 
 
@@ -347,7 +352,30 @@ export const invite = async (req:Request , res: Response ) => {
             role
         });
 
-        //invite token generation goes here.....  to be continued.
+        //invite token generation
+        //takes , payload,jwt secret and one option
+        const inviteToken = generateInviteToken(invitedUser.user_id);
+
+        //check if token was generated.
+        if (!inviteToken){
+            throw new Error('Failed to create invite token!');
+        }
+
+        //inviting the user 
+        return res.status(200).json({
+            success: true,
+            message: "Invite successful!",
+            data: inviteToken, //here to be used during testing.
+            user:{
+                user_id: invitedUser.user_id,
+                organization_id: invitedUser.organization_id,
+                first_name:invitedUser.first_name,
+                last_name:invitedUser.last_name,
+                email:invitedUser.email,
+                phone:invitedUser.phone,
+                role:invitedUser.role
+            }
+        })
         
     }catch(error){
         console.error("Invitation error:",error);
@@ -357,5 +385,79 @@ export const invite = async (req:Request , res: Response ) => {
         })
     }
 
+}
+
+
+//function to acceptInvite.
+
+export const acceptInvite = async (req: Request , res: Response ) =>{
+    //no middleware used for this route.
+
+    //capture the users invite token and the password they are setting up.
+    const {inviteToken , password } = req.body;
+
+    if(!inviteToken || !password ){
+        return res.status(400).json({
+            success:false,
+            message: "All fields are required!"
+        })
+    }
+
+    //validate the password , ensure it is strong enough.
+    if(!isStrongPassword(password)){
+        return res.status(400).json({
+            success:false,
+            message: "Password must be atleast 8 characters!"
+        })
+    }
+
+    //ensure the token is valid using jwt.verify() and check it's an invite token
+    const secret = process.env.JWT_SECRET;
+
+    if(!secret){
+        throw new Error('JWT secret is not defined!');
+    }
+
+    try{
+        const decoded = jwt.verify(inviteToken,secret) as JwtPayload & {
+            type: string;  
+            user_id: string;
+        };
+
+        //check if it's an invite type.
+
+        if(decoded.type !== "invite"){
+            return res.status(401).json({
+                success:false,
+                message: "Not Authenticated!"
+            })
+        }
+
+        //update the password hash into the database.
+
+        const user = await updatePassword(decoded.user_id,password);
+
+        return res.status(201).json({
+            success: true,
+            message: "Password has been updated successfully! Proceed to Login",
+            user:{
+                user_id:user.user_id,
+                first_name:user.first_name,
+                last_name:user.last_name,
+                email:user.email,
+                role:user.role
+            }
+        })
+        
+
+
+    }catch(error){
+        console.error("Accept invite error:",error);
+        return res.status(401).json({
+            success:false,
+            message: "Invalid or expired invite link!"
+        })
+
+    }
 }
 

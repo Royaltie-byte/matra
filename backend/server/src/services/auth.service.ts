@@ -250,3 +250,55 @@ export const createInvitedUser = async (user: InvitedUserData) => {
     return result.rows[0];
 }
 
+
+//creating an invite token , different from the login token , only purpose is 
+//to invite.
+
+export const generateInviteToken = (user_id: string) => {
+    const secret = process.env.JWT_SECRET;
+
+    if(!secret){
+        throw new Error('JWT secret is not defined!');
+    }
+
+    //create the token.
+
+    const token = jwt.sign(
+        {
+            user_id: user_id,
+            type: "invite"
+        },
+        secret,
+        {
+            expiresIn:"1d"
+        }
+
+    );
+
+    return token;
+}
+
+
+export const updatePassword = async (user_id: string , plainPassword: string ) => {
+    //hash the password.
+    const hashedPassword  = await bcrypt.hash(plainPassword,10);
+
+    const result = await pool.query(
+        `UPDATE  users
+         SET password_hash = $1 , is_active = true
+         WHERE user_id = $2
+         RETURNING user_id,organization_id,first_name,last_name,email,phone,role`,
+         [
+            hashedPassword,
+            user_id
+         ]
+    )
+
+    //make sure that the user existed in the database
+    if(result.rowCount === 0){
+        throw new Error('User not found!');
+    }
+
+    return result.rows[0];
+}
+
