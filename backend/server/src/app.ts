@@ -7,6 +7,7 @@ import authRouter from "./routes/auth.routes.js";
 
 //add a global middleware that logs the method, ip and original url for all routes
 import { logger } from "./middleware/log.middleware.js";
+import mothersRoutes from "./routes/mothers.routes.js";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(logger);
 app.use('/',homeRouter);
 app.use('/health',healthRouter)
 app.use('/auth', authRouter);
+app.use("/mothers", mothersRoutes);
 
 
 export default app;
