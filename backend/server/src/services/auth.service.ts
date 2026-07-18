@@ -210,3 +210,43 @@ export const generateToken = (user_id: string , organization_id: string , role: 
     );
 }
 
+
+//=============== UNDER INVITE ==============//
+//create a new interface for creating a new invited user without the password
+
+interface  InvitedUserData {
+    organization_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    role: string;
+}
+
+
+export const createInvitedUser = async (user: InvitedUserData) => {
+    const result = await pool.query(
+        `INSERT INTO users(
+            organization_id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            role,
+            is_active
+            )
+        VALUES($1,$2,$3,$4,$5,$6,$7)
+        RETURNING user_id , organization_id,first_name,last_name,email,phone,role,created_at`,
+        [
+            user.organization_id,
+            user.first_name,
+            user.last_name,
+            user.email.toLowerCase().trim(),
+            user.phone,
+            user.role,
+            false
+        ]
+    );
+    return result.rows[0];
+}
+

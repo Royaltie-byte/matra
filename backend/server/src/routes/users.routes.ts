@@ -2,10 +2,9 @@
 //restricted so this is where we will test the authorisation middleware.
 
 import  { Router } from 'express';
-import { getUsers , inviteUsers } from '../controllers/users.controller.js';
+import { getUsers  } from '../controllers/users.controller.js';
 
 const router = Router();
 
 router.get('/',getUsers);
 
-router.post('/invite',inviteUsers);
