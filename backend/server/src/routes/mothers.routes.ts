@@ -14,10 +14,11 @@ router.post(
 );
 
 // GET /mothers - list mothers in org (any authenticated org staff)
-router.get("/", authenticateToken, listMothers);
+//made this accessible to everyone
+router.get("/", authenticateToken, requireRole(["SUPER_ADMIN", "HOSPITAL_ADMIN","DOCTOR","NURSE"]), listMothers);
 
 // GET /mothers/:id - full mother profile (any authenticated org staff)
-router.get("/:id", authenticateToken, getMother);
+router.get("/:id", authenticateToken,requireRole(["NURSE", "DOCTOR", "HOSPITAL_ADMIN"]), getMother);
 
 // PATCH /mothers/:id - update identity/contact info
 router.patch(
