@@ -4,8 +4,9 @@ import express from "express";
 import homeRouter from "./routes/home.routes.js";
 import healthRouter from "./routes/health.routes.js";
 import authRouter from "./routes/auth.routes.js";
-import mothersRoutes from "./routes/mothers.routes.js";
+import mothersRouter from "./routes/mothers.routes.js";
 import enrollmentRouter from './routes/enrollment.routes.js';
+import deliveryRouter from "./routes/delivery.routes.js";
 
 //add a global middleware that logs the method, ip and original url for all routes
 import { logger } from "./middleware/log.middleware.js";
@@ -23,8 +24,9 @@ app.use(logger);
 app.use('/',homeRouter);
 app.use('/health',healthRouter)
 app.use('/auth', authRouter);
-app.use("/mothers", mothersRoutes);
+app.use("/mothers", mothersRouter);
 app.use('/enrollment',enrollmentRouter)
+app.use("/enrollments", deliveryRouter);
 
 
 export default app;
