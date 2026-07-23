@@ -111,3 +111,19 @@ export const updateEnrollmentById = async (enrollment_id: string , organization_
 
     return result.rows[0];
 }
+
+
+//======finds current active enrollment for sending messages to mothers=====//
+
+
+export const findActiveEnrollmentByMother = async (mother_id: string , organization_id: string ) => {
+    const result = await pool.query(
+        `SELECT * FROM enrollment
+         WHERE mother_id = $1 AND organization_id = $2 AND status = 'ACTIVE'
+         ORDER BY created_at DESC
+         LIMIT 1 ` ,//only one enrollment is needed, the most recent active one.
+         [mother_id,organization_id]
+    );
+
+    return result.rows[0];
+}

@@ -108,9 +108,10 @@ export const findMotherById = async ( mother_id: string, organization_id: string
 // we enforce "no duplicate phone within the same org" here at the app layer.
 export const findMotherByPhone = async ( phone: string, organization_id: string, db: DBClient = pool ) => {
     const result = await db.query(
-        `SELECT mother_id, phone
+        `SELECT * 
          FROM mother
-         WHERE phone = $1 AND organization_id = $2`,
+         WHERE phone = $1 AND organization_id = $2`, //phone and org id are required elsewhere hence the change.(not actually required but won't really affect anything)
+
         [phone.trim(), organization_id]
     );
 
