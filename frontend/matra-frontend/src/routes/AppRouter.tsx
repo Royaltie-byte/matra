@@ -13,15 +13,18 @@ import NotFound from "../pages/NotFound";
 
 import DashboardLayout from "../layouts/DashboardLayout";
 
+import AuthLayout from "../layouts/AuthLayout";
+
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
+        <Route element={<AuthLayout />}>
+            <Route path="/" element={<Login />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+        </Route>
         {/* Protected area (authentication comes later) */}
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
